@@ -1,0 +1,13 @@
+.progress {
+    margin-bottom: 0px;
+    height:8px;
+    border-radius: 0px;
+}
+
+.clear {
+    clear: both;
+}
+
+.time {
+    padding:3px 15px;
+}

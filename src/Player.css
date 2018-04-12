@@ -1,0 +1,113 @@
+h2 {
+    margin-top:5px;
+}
+
+.player {
+    margin: 320px -15px 5px -15px;
+    border-bottom: 1px solid #eee;
+    background-color:#f4f4f4;
+    padding-bottom: 35px;
+    color:#444;
+    text-align: center;
+    overflow: none;
+}
+
+.padding {
+    padding: 0px 10px;
+}
+
+
+.btn-auth {
+    margin-top:10px;
+}
+
+.modal {
+    max-width:600px;
+    margin:6% auto 0%;   
+}
+
+.modal-body {
+    padding-bottom: 50px;
+    text-align: left !important;
+}
+
+.modal-content {
+    border:0px !important;
+}
+
+.modal-background {
+    display: none;
+    background-color:rgba(0,0,0,0.4); 
+    position:fixed; 
+    top:0px; 
+    left:0px; 
+    height:100%;
+    width:100%;
+    z-index: 1099;
+}
+
+.modal-background .show {
+    display: block;
+}
+
+.buttons li {
+    cursor: pointer;
+    height:60px;
+    margin:0px 5px;
+    width:60px;
+    padding: 3.5px 0px;
+}
+
+.buttons li:hover {
+    background-color:rgba(255,255,255,0.8);
+}
+
+.buttons.main {
+    font-size:38px;
+    margin: 25px 0px 25px -5px;
+}
+
+.buttons.extras li {
+    font-size:20px;
+    height:34px;
+}
+
+.title {
+    margin:12px 0px 4px;
+    height: 40px;
+}
+
+.hack {
+    height: 10px;
+}
+
+.tracks {
+    margin:0px auto;
+    max-width:440px;
+    margin-top: 5%;
+}
+
+.tracks li {
+    cursor: pointer;
+    margin:8px 0px;
+    padding:5px 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.tracks li:hover {
+    background-color:#f9f9f9;
+}
+
+.bars {
+    position:relative;
+    top:-10px;
+    display:none;
+}
+
+.bars .show {
+    display:block;
+}
+
+.selected, .selected:hover {
+    background-color:rgba(0, 225, 155, 0.8) !important;
+}
