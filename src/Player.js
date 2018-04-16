@@ -14,7 +14,7 @@ class Player extends Component {
                 url: "",
                 artist: "No track selected...",
                 name: "No track selected...",
-                artwork_url: "url(note.png)"
+                artwork_url: "note.png"
             },
             paused: true,
             position: 0,
@@ -43,7 +43,7 @@ class Player extends Component {
                         title: name.split(" - ")[1],
                         artist: name.split(" - ")[0],
                         // https://png.icons8.com/color/300/music-record
-                        artwork_url: "url(note.png)",
+                        artwork_url: "note.png",
                         showBars: false
                     });
                     id++;
@@ -84,7 +84,7 @@ class Player extends Component {
             }).then((response, status) => {
                 if (response.tracks.items.length > 0) {
                     let _track = this.state.current;
-                    _track.artwork_url = "url(" + response.tracks.items[0].album.images[0].url + ")";
+                    _track.artwork_url = response.tracks.items[0].album.images[0].url;
                     this.setState({ current: _track });
                 }
             }, (response) => {
