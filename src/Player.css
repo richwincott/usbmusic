@@ -23,7 +23,17 @@ h2 {
 
 .modal {
     max-width:600px;
-    margin:6% auto 0%;   
+    margin:6% auto 0%;
+    padding: 0px 20px;   
+}
+
+.modal-header {
+    background-color:#f4f4f4;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 5px;
+    padding-bottom: 0px;
+    text-align: center;
 }
 
 .modal-body {
@@ -81,6 +91,12 @@ h2 {
     height: 10px;
 }
 
+.close {
+    font-size: 32px;
+    box-shadow: none !important;
+    float: none;
+}
+
 .tracks {
     margin:0px auto;
     max-width:440px;
@@ -88,6 +104,7 @@ h2 {
 }
 
 .tracks li {
+    position: relative;
     cursor: pointer;
     margin:8px 0px;
     padding:5px 10px;
@@ -110,4 +127,18 @@ h2 {
 
 .selected, .selected:hover {
     background-color:rgba(0, 225, 155, 0.8) !important;
+}
+
+.search, .search:focus {
+    border:0px;
+    box-shadow: none;
+    background-color: transparent;
+    padding-left: 6px;
+    padding-right: 38px;
+}
+
+.fa-search {
+    position:absolute;
+    top:15px;
+    right:20px;
 }

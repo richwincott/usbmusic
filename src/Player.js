@@ -20,6 +20,7 @@ class Player extends Component {
             position: 0,
             shuffle: false,
             modal: false,
+            search: null
         }
         if (sessionStorage.getItem("params") != null)
             this.params = JSON.parse(sessionStorage.getItem("params"));
@@ -40,7 +41,7 @@ class Player extends Component {
                         id: id,
                         url: link.href.replace(":3000", ""),
                         name: name,
-                        title: name.split(" - ")[1],
+                        title: name.split(" - ")[1] ? name.split(" - ")[1] : "",
                         artist: name.split(" - ")[0],
                         // https://png.icons8.com/color/300/music-record
                         artwork_url: "note.png",
@@ -116,19 +117,24 @@ class Player extends Component {
     toggleModal = () => {
         this.setState({ modal: !this.state.modal });
     }
+    searchChanged = (ev) => {
+        this.setState({ search: ev.currentTarget.value })
+    }
     render() {
         let title = <div className="hack"></div>
         if (this.state.current.title)
             title = <div><b>{this.state.current.title}</b></div>
         const tracks = this.state.tracks.map((track) => {
-            const barsClass = track.showBars ? "pull-right bars show" : "pull-right bars";
-            return (
-                <li onClick={this.select.bind(this, track)} key={track.id}>
-                    <b>{track.title}</b>
-                    <br/>{track.artist}
-                    <img className={barsClass} src="bars.gif" />
-                </li>
-            )
+            if (track.title.indexOf(this.state.search) > -1 || track.artist.indexOf(this.state.search) > -1 || this.state.search == null) {
+                const barsClass = track.showBars ? "pull-right bars show" : "pull-right bars";
+                return (
+                    <li onClick={this.select.bind(this, track)} key={track.id}>
+                        <b>{track.title}</b>
+                        <br/>{track.artist}
+                        <img className={barsClass} src="bars.gif" />
+                    </li>
+                )
+            }
         });
         const playOrPause = () => {
             return this.state.paused ? "fa fa-play" : "fa fa-pause"
@@ -139,18 +145,19 @@ class Player extends Component {
         const modalClass = (others) => {
             return this.state.modal ? others + " show" : others;
         }
+        // sexy close icon - https://d30y9cdsu7xlg0.cloudfront.net/png/582631-200.png
         return (
             <div>
                 <div className={modalClass("modal-background")}>
                     <div className={modalClass("modal")}>
                         <div className="modal-content">
-                            <div className="modal-header">
-                                <a className="btn btn-default" onClick={this.toggleModal.bind(this)}>Close</a>
+                            <div className="modal-header">                               
+                                <a className="btn close" onClick={this.toggleModal.bind(this)}><img src="close.png" height="50" /></a>
                             </div>
                             <div className="modal-body">
                                 <h2>USBMusic <small>v5</small></h2>
-                                <p>Personal web app to play music remotely from usb storage medium attached to server machine.</p>
-                                <br/>
+                                <p>Personal web app to play music remotely from usb device.</p>
+                                <p>Written with ReactJS.</p>
                                 <p>This app uses the Spotify API to download album artwork.</p>
                             </div>
                         </div>
@@ -178,8 +185,12 @@ class Player extends Component {
                             </div>
                         </div>
                     </div>
-                    <div className="col-xs-12 col-sm-6">
+                    <div className="col-xs-12 col-sm-6">         
                         <ul className="tracks list-unstyled">
+                            <li>
+                                <input className="form-control search" onChange={this.searchChanged.bind(this)} placeholder="Search" />
+                                <i className="fa fa-search" aria-hidden="true"></i>
+                            </li>
                             {tracks}
                         </ul>
                     </div>
