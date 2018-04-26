@@ -7,7 +7,9 @@ class Player extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            mode: 0, // 0 = audio, 1 = youtube
             player: new Audio(),
+            playerYT: null,
             tracks: [],
             current: {
                 id: null,
@@ -20,7 +22,8 @@ class Player extends Component {
             position: 0,
             shuffle: false,
             modal: false,
-            search: null
+            search: null,
+            youtubeUrl: null,
         }
         if (sessionStorage.getItem("params") != null)
             this.params = JSON.parse(sessionStorage.getItem("params"));
@@ -39,6 +42,7 @@ class Player extends Component {
                     const name = link.innerHTML.replace(".mp3", "");
                     tracks.push({
                         id: id,
+                        type: 0,
                         url: link.href.replace(":3000", ""),
                         name: name,
                         title: name.split(" - ")[1] ? name.split(" - ")[1] : "",
@@ -55,21 +59,43 @@ class Player extends Component {
     }
     toggle = () => {
         if (this.state.current.id != null) {
-            if (this.state.paused)
-                this.state.player.play();         
-            else
-                this.state.player.pause();
+            if (this.state.mode == 1) {
+                let playerYT = this.state.playerYT;
+                if (this.state.paused) {
+                    this.state.playerYT.playVideo();
+                    playerYT.paused = false;
+                }
+                else {
+                    this.state.playerYT.pauseVideo();
+                    playerYT.paused = true;
+                }
+                this.setState({ playerYT: playerYT });
+            }
+            else {
+                if (this.state.paused)
+                    this.state.player.play();         
+                else
+                    this.state.player.pause();        
+            }
+            let current = this.state.current;
+            current.showBars = !current.showBars;
+            this.setState({ paused: !this.state.paused, current: current });
         }
-        let current = this.state.current;
-        current.showBars = !current.showBars;
-        this.setState({ paused: !this.state.paused, current: current });
     }
     shuffle = () => {
         this.setState({ shuffle: !this.state.shuffle });
     }
-    select = (track) => {     
-        this.state.player.src = track.url;
-        this.state.player.play(); 
+    select = (track) => {
+        this.setState({ mode: track.type });
+        if (track.type == 0) {
+            if (this.state.playerYT)
+                this.setState({ playerYT: null });
+            this.state.player.src = track.url;
+            this.state.player.play(); 
+        }
+        else {
+            this.state.player.pause();
+        }
         this.state.tracks.forEach(function(track) {
             track.showBars = false;
         });
@@ -78,7 +104,7 @@ class Player extends Component {
         window.scrollTo(0, 0);
         if (this.params) {
             window.$.ajax({
-                url: "https://api.spotify.com/v1/search?query=" + track.title + "+artist:" + track.artist + "&type=track",
+                url: "https://api.spotify.com/v1/search?query=" + track.title.split("ft.")[0].split("(")[0].replace(/[|&;$%@"<>()+,]/g, "") + "+artist:" + track.artist.split("ft.")[0].replace(/[|&;$%@"<>()+,]/g, "") + "&type=track",
                 headers: {
                     "Authorization": "Bearer " + this.params["access_token"]
                 },
@@ -119,6 +145,37 @@ class Player extends Component {
     }
     searchChanged = (ev) => {
         this.setState({ search: ev.currentTarget.value })
+    }
+    youtubeUrlChanged = (ev) => {
+        this.setState({ youtubeUrl: ev.currentTarget.value })
+    }
+    addToPlaylist = () => {
+        if (this.state.youtubeUrl.indexOf("youtu") > -1) {     
+            window.$.ajax({
+                url: "http://richardwincott.co.uk/youtubemetadata?url=" + this.state.youtubeUrl,
+            }).then((response, status) => {
+                var response = JSON.parse(response);
+                if (response.title.indexOf(" - ") > -1) {
+                    let tracks = this.state.tracks;
+                    tracks.push({
+                        id: tracks.length,
+                        type: 1,
+                        url: "ytId:" + response.thumbnail_url.split("/")[4],
+                        name: response.title,
+                        title: response.title.split(" - ")[1],
+                        artist: response.title.split(" - ")[0],
+                        artwork_url: "note.png",
+                        showBars: false
+                    });
+                    this.setState({ tracks: tracks });
+                }
+            });
+        }
+    }
+    handleYTReady = (event) => {
+        // access to player in all event handlers via event.target
+        // e.g. event.target.pauseVideo();
+        this.setState({ mode: 1, playerYT: event.target });
     }
     render() {
         let title = <div className="hack"></div>
@@ -166,8 +223,8 @@ class Player extends Component {
                 <div className="row">
                     <div className="col-xs-12 col-sm-6">
                         <div className="player">
-                            <Artwork current={this.state.current} />
-                            <Progress player={this.state.player} ended={this.next} />
+                            <Artwork current={this.state.current} handleYTReady={this.handleYTReady} />
+                            <Progress player={this.state.player} playerYT={this.state.playerYT} ended={this.next} />
                             <div className="padding">
                                 <div className="title">
                                     {title}{this.state.current.artist}
@@ -182,8 +239,14 @@ class Player extends Component {
                                     <li><i className="fa fa-list-ul" aria-hidden="true"></i></li>
                                     <li onClick={this.toggleModal.bind(this)}><i className="fa fa-info" aria-hidden="true"></i></li>
                                 </ul>
+                                <br/>
+                                <br/>
+                                <div className="input-group">                             
+                                    <input className="form-control" onChange={this.youtubeUrlChanged.bind(this)} placeholder="Youtube song url" />
+                                    <a className="input-group-addon btn btn-default" onClick={this.addToPlaylist.bind(this)}>Add</a>
+                                </div>
                             </div>
-                        </div>
+                        </div>                       
                     </div>
                     <div className="col-xs-12 col-sm-6">         
                         <ul className="tracks list-unstyled">

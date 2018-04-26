@@ -9,28 +9,51 @@ class Progress extends Component {
         }
     }
     updateTime = (ev) => {
+        let duration;
+        if (this.props.playerYT != null)
+            duration = this.props.playerYT.getDuration();
+        else
+            duration = this.props.player.duration;
         const percent = ((ev.nativeEvent.layerX / ev.nativeEvent.target.parentElement.clientWidth) * 100);
-        const newTime = this.props.player.duration / 100 * percent;
-        this.props.player.currentTime = newTime;
+        const newTime = duration / 100 * percent;
+        if (this.props.playerYT != null)
+            this.props.playerYT.seekTo(newTime);
+        else
+            this.props.player.currentTime = newTime;
     }
     render() {     
+        let currentTime, duration, paused, ended;
+        if (this.props.playerYT != null) {
+            currentTime = this.props.playerYT.getCurrentTime();
+            duration = this.props.playerYT.getDuration();
+            paused: this.props.playerYT.paused;
+            ended: currentTime == duration ? true : false;
+        }
+        else {
+            currentTime = this.props.player.currentTime;
+            duration = this.props.player.duration;
+            paused = this.props.player.paused;
+            ended = this.props.player.ended;
+        }
+
         setTimeout(() => {
-            if (!this.props.player.paused)
-                this.setState({ position: this.props.player.currentTime / this.props.player.duration * 100 });
+            if (!paused && !ended)
+                this.setState({ position: currentTime / duration * 100 });
             else 
-                if (this.props.player.ended)
+                if (ended)
                     this.props.ended();
         }, 250);
-        let currentTimeMins = Math.floor(this.props.player.currentTime / 60)
+
+        let currentTimeMins = Math.floor(currentTime / 60)
         if (currentTimeMins < 10)
             currentTimeMins = "0" + currentTimeMins
-        let currentTimeSecs = Math.floor(this.props.player.currentTime - currentTimeMins * 60)
+        let currentTimeSecs = Math.floor(currentTime - currentTimeMins * 60)
         if (currentTimeSecs < 10)
             currentTimeSecs = "0" + currentTimeSecs
-        let durationMins = Math.floor(this.props.player.duration / 60)
+        let durationMins = Math.floor(duration / 60)
         if (durationMins < 10)
             durationMins = "0" + durationMins
-        let durationSecs = Math.floor(this.props.player.duration - durationMins * 60)
+        let durationSecs = Math.floor(duration - durationMins * 60)
         if (durationSecs < 10)
             durationSecs = "0" + durationSecs
         return (

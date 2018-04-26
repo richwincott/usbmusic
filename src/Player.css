@@ -98,7 +98,7 @@ h2 {
 }
 
 .tracks {
-    margin:0px auto;
+    margin:0px auto 50px;
     max-width:440px;
     margin-top: 5%;
 }
@@ -107,7 +107,7 @@ h2 {
     position: relative;
     cursor: pointer;
     margin:8px 0px;
-    padding:5px 10px;
+    padding:5px 15px;
     border-bottom: 1px solid #eee;
 }
 
@@ -133,12 +133,12 @@ h2 {
     border:0px;
     box-shadow: none;
     background-color: transparent;
-    padding-left: 6px;
+    padding-left: 5px;
     padding-right: 38px;
 }
 
 .fa-search {
     position:absolute;
     top:15px;
-    right:20px;
+    right:25px;
 }
