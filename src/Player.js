@@ -34,10 +34,7 @@ class Player extends Component {
             let id = 0; 
             for (var i = 0; i < window.$(response).find("a").length; i++) {
                 var link = window.$(response).find("a")[i];
-                ["xml", "config", "Old Music", "Bruno Mars"].forEach((word) => {
-                    if (link.innerHTML.indexOf(word) > -1)
-                        link.bad = true;
-                })
+                this.bad(link);
                 if (i > 0 && !link.bad) {
                     const name = link.innerHTML.replace(".mp3", "");
                     tracks.push({
@@ -57,9 +54,15 @@ class Player extends Component {
             this.setState({ tracks: tracks })
         });    
     }
+    bad = (link) => {
+        ["xml", "config", "Old Music", "Bruno Mars"].forEach((word) => {
+            if (link.innerHTML.indexOf(word) > -1)
+                link.bad = true;
+        })
+    }
     toggle = () => {
         if (this.state.current.id != null) {
-            if (this.state.mode == 1) {
+            if (this.state.mode === 1) {
                 let playerYT = this.state.playerYT;
                 if (this.state.paused) {
                     this.state.playerYT.playVideo();
@@ -87,11 +90,14 @@ class Player extends Component {
     }
     select = (track) => {
         this.setState({ mode: track.type });
-        if (track.type == 0) {
+        if (track.type === 0) {
             if (this.state.playerYT)
-                this.setState({ playerYT: null });
-            this.state.player.src = track.url;
-            this.state.player.play(); 
+                this.setState({playerYT: null});
+            let player = this.state.player;
+            player.src = track.url;
+            this.setState({player}, () => {
+                this.state.player.play(); 
+            });
         }
         else {
             this.state.player.pause();
@@ -116,17 +122,14 @@ class Player extends Component {
                 }
             }, (response) => {
                 if (window.confirm(response.responseJSON.error.message + ". Redirect to Spotify to re-authenticate?")) {
-                    const client_id = "cfb217e62b304cfda01dc7e92319fbe4";
-                    const request_uri = encodeURI("http://192.168.1.251:3000/");
-                    const url = "https://accounts.spotify.com/authorize?client_id=" + client_id + "&redirect_uri=" + request_uri + "&response_type=token&state=123"
-                    window.location.href = url;
+                    window.location.href = process.env.REACT_APP_PUBLIC_URL + '?';
                 }
             });   
         }
     }
     next = () => {
         let nextId = this.state.current.id + 1;
-        if (nextId == this.state.tracks.length + 1)
+        if (nextId === this.state.tracks.length + 1)
             nextId = this.state.tracks.length
         if (this.state.shuffle)
             nextId = Math.floor(Math.random() * this.state.tracks.length-1);
@@ -134,7 +137,7 @@ class Player extends Component {
     }
     previous = () => {
         let nextId = this.state.current.id - 1;
-        if (nextId == -1)
+        if (nextId === -1)
             nextId = 0;
         if (this.state.shuffle)
             nextId = Math.floor(Math.random() * this.state.tracks.length-1);
@@ -152,18 +155,18 @@ class Player extends Component {
     addToPlaylist = () => {
         if (this.state.youtubeUrl.indexOf("youtu") > -1) {     
             window.$.ajax({
-                url: "http://richardwincott.co.uk/youtubemetadata?url=" + this.state.youtubeUrl,
+                url: process.env.REACT_APP_PUBLIC_URL + "/youtubemetadata?url=" + this.state.youtubeUrl,
             }).then((response, status) => {
-                var response = JSON.parse(response);
-                if (response.title.indexOf(" - ") > -1) {
+                var response_json = JSON.parse(response);
+                if (response_json.title.indexOf(" - ") > -1) {
                     let tracks = this.state.tracks;
                     tracks.push({
                         id: tracks.length,
                         type: 1,
-                        url: "ytId:" + response.thumbnail_url.split("/")[4],
-                        name: response.title,
-                        title: response.title.split(" - ")[1],
-                        artist: response.title.split(" - ")[0],
+                        url: "ytId:" + response_json.thumbnail_url.split("/")[4],
+                        name: response_json.title,
+                        title: response_json.title.split(" - ")[1],
+                        artist: response_json.title.split(" - ")[0],
                         artwork_url: "note.png",
                         showBars: false
                     });
@@ -188,10 +191,11 @@ class Player extends Component {
                     <li onClick={this.select.bind(this, track)} key={track.id}>
                         <b>{track.title}</b>
                         <br/>{track.artist}
-                        <img className={barsClass} src="bars.gif" />
+                        <img className={barsClass} src="bars.gif" alt="music bars animation" />
                     </li>
                 )
             }
+            return undefined;
         });
         const playOrPause = () => {
             return this.state.paused ? "fa fa-play" : "fa fa-pause"
@@ -209,7 +213,7 @@ class Player extends Component {
                     <div className={modalClass("modal")}>
                         <div className="modal-content">
                             <div className="modal-header">                               
-                                <a className="btn close" onClick={this.toggleModal.bind(this)}><img src="close.png" height="50" /></a>
+                                <a className="btn close" onClick={this.toggleModal.bind(this)}><img src="close.png" height="50" alt="close button" /></a>
                             </div>
                             <div className="modal-body">
                                 <h2>USBMusic <small>v5</small></h2>

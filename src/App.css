@@ -2,3 +2,6 @@ body {
     overflow-y: scroll;
     overflow-x: hidden;
 }
+.app.container {
+    overflow: hidden;
+}

@@ -25,7 +25,7 @@ class Artwork extends Component {
         }
         return (
             <div className="artwork-container">
-                <img className="artwork" src={this.props.current.artwork_url} />
+                <img className="artwork" alt="album artwork" src={this.props.current.artwork_url} />
                 {video}
             </div>
         );

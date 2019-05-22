@@ -8,16 +8,16 @@
       manifest.json provides metadata used when your web app is added to the
       homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
     -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-    <link rel="shortcut icon" href="%PUBLIC_URL%/note.png">
-    <link rel="stylesheet" href="%PUBLIC_URL%/lib/font-awesome-4.7.0/css/font-awesome.css">
-    <link rel="stylesheet" href="%PUBLIC_URL%/lib/bootstrap-3.3.7/css/bootstrap.css">
+    <link rel="manifest" href="%REACT_APP_PUBLIC_URL%/manifest.json">
+    <link rel="shortcut icon" href="%REACT_APP_PUBLIC_URL%/note.png">
+    <link rel="stylesheet" href="%REACT_APP_PUBLIC_URL%/lib/font-awesome-4.7.0/css/font-awesome.css">
+    <link rel="stylesheet" href="%REACT_APP_PUBLIC_URL%/lib/bootstrap-3.3.7/css/bootstrap.css">
     <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
+      Notice the use of %REACT_APP_PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
       Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      Unlike "/favicon.ico" or "favicon.ico", "%REACT_APP_PUBLIC_URL%/favicon.ico" will
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
@@ -35,12 +35,12 @@
             sessionStorage.setItem("params", JSON.stringify(params));
             window.location.href = window.location.href.split("#")[0];
         }
-
         const client_id = "cfb217e62b304cfda01dc7e92319fbe4";
-        const request_uri = encodeURI("http://192.168.1.251:3000/");
+        const request_uri = encodeURI("%REACT_APP_PUBLIC_URL%/");
         const url = "https://accounts.spotify.com/authorize?client_id=" + client_id + "&redirect_uri=" + request_uri + "&response_type=token&state=123" 
-        if (sessionStorage.getItem("params") == null)
+        if (sessionStorage.getItem("params") == null || window.location.toString().indexOf("?") > -1) {
             window.location.href = url;
+        }
     </script>
     <title>USBMusic</title>
   </head>
@@ -59,7 +59,7 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
-    <script src="%PUBLIC_URL%/lib/jquery-3.1.1/jquery.min.js"></script>
-    <script src="%PUBLIC_URL%/lib/bootstrap-3.3.7/js/bootstrap.js"></script>
+    <script src="%REACT_APP_PUBLIC_URL%/lib/jquery-3.1.1/jquery.min.js"></script>
+    <script src="%REACT_APP_PUBLIC_URL%/lib/bootstrap-3.3.7/js/bootstrap.js"></script>
   </body>
 </html>

@@ -4,10 +4,11 @@ import './App.css';
 
 class App extends Component {
   constructor() {
-    super();    
+    super();
     this.state = {
-      dataUrl: "http://192.168.1.251/data/"
+      dataUrl: process.env.REACT_APP_PUBLIC_URL.split(':3000')[0] + "/../data/"
     }
+    console.log(this.state)
   }
   render() {
     return (

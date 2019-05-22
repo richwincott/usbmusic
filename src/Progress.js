@@ -26,8 +26,8 @@ class Progress extends Component {
         if (this.props.playerYT != null) {
             currentTime = this.props.playerYT.getCurrentTime();
             duration = this.props.playerYT.getDuration();
-            paused: this.props.playerYT.paused;
-            ended: currentTime == duration ? true : false;
+            paused = this.props.playerYT.paused;
+            ended = currentTime === duration ? true : false;
         }
         else {
             currentTime = this.props.player.currentTime;
