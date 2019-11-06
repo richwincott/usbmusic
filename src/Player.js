@@ -21,9 +21,11 @@ class Player extends Component {
             paused: true,
             position: 0,
             shuffle: false,
-            modal: false,
+            infoModal: false,
+            ytModal: false,
             search: null,
-            youtubeUrl: null,
+            youtubeUrl: "",
+            showTracks: window.innerWidth < 576 ? false : true
         }
         if (sessionStorage.getItem("params") != null)
             this.params = JSON.parse(sessionStorage.getItem("params"));
@@ -106,7 +108,7 @@ class Player extends Component {
             track.showBars = false;
         });
         track.showBars = true;
-        this.setState({ current: track, paused: false })
+        this.setState({ current: track, paused: false, showTracks: window.innerWidth < 576 ? false : true })
         window.scrollTo(0, 0);
         if (this.params) {
             window.$.ajax({
@@ -143,8 +145,14 @@ class Player extends Component {
             nextId = Math.floor(Math.random() * this.state.tracks.length-1);
         this.select(this.state.tracks[nextId]);
     }
-    toggleModal = () => {
-        this.setState({ modal: !this.state.modal });
+    toggleInfoModal = () => {
+        this.setState({ infoModal: !this.state.infoModal });
+    }
+    toggleYTModal = () => {
+        this.setState({ ytModal: !this.state.ytModal });
+    }
+    toggleTracks = () => {
+        this.setState({ showTracks: !this.state.showTracks });
     }
     searchChanged = (ev) => {
         this.setState({ search: ev.currentTarget.value })
@@ -155,22 +163,25 @@ class Player extends Component {
     addToPlaylist = () => {
         if (this.state.youtubeUrl.indexOf("youtu") > -1) {     
             window.$.ajax({
-                url: process.env.REACT_APP_PUBLIC_URL + "/youtubemetadata?url=" + this.state.youtubeUrl,
+                url: process.env.REACT_APP_PUBLIC_URL.split(':3000')[0] + "/youtubemetadata?url=" + this.state.youtubeUrl,
             }).then((response, status) => {
                 var response_json = JSON.parse(response);
                 if (response_json.title.indexOf(" - ") > -1) {
                     let tracks = this.state.tracks;
-                    tracks.push({
+                    let track = {
                         id: tracks.length,
                         type: 1,
                         url: "ytId:" + response_json.thumbnail_url.split("/")[4],
                         name: response_json.title,
-                        title: response_json.title.split(" - ")[1],
+                        title: response_json.title.split(" - ")[1].split("(")[0].split("[")[0],
                         artist: response_json.title.split(" - ")[0],
                         artwork_url: "note.png",
                         showBars: false
+                    }
+                    tracks.push(track);
+                    this.setState({ tracks: tracks, youtubeUrl: "", ytModal: !this.state.ytModal }, () => {
+                        this.select(track);
                     });
-                    this.setState({ tracks: tracks });
                 }
             });
         }
@@ -203,17 +214,52 @@ class Player extends Component {
         const shuffleClass = () => {
             return this.state.shuffle ? "selected" : "";
         }          
-        const modalClass = (others) => {
-            return this.state.modal ? others + " show" : others;
+        const infoModalClass = (others) => {
+            return this.state.infoModal ? others + " show" : others;
         }
+        const ytModalClass = (others) => {
+            return this.state.ytModal ? others + " show" : others;
+        }
+        const player = this.state.showTracks && window.innerWidth < 576 ? null : <div className="col-xs-12 col-sm-6">
+            <div className="player">
+                <Artwork current={this.state.current} handleYTReady={this.handleYTReady} />
+                <Progress player={this.state.player} playerYT={this.state.playerYT} ended={this.next} />
+                <div className="padding">
+                    <div className="title">
+                        {title}{this.state.current.artist}
+                    </div>
+                    <ul className="buttons main list-unstyled list-inline">
+                        <li onClick={this.previous.bind(this)}><i className="fa fa-fast-backward" aria-hidden="true"></i></li>
+                        <li onClick={this.toggle.bind(this)}><i className={playOrPause()} aria-hidden="true"></i></li>
+                        <li onClick={this.next.bind(this)}><i className="fa fa-fast-forward" aria-hidden="true"></i></li>
+                    </ul>
+                    <ul className="buttons extras list-unstyled list-inline">
+                        <li onClick={this.shuffle.bind(this)} className={shuffleClass()}><i className="fa fa-random" aria-hidden="true"></i></li>
+                        <li onClick={this.toggleTracks.bind(this)} className="hidden-sm hidden-md hidden-lg"><i className="fa fa-list-ul" aria-hidden="true"></i></li>
+                        <li onClick={this.toggleYTModal.bind(this)}><i className="fa fa-plus" aria-hidden="true"></i></li>
+                        <li onClick={this.toggleInfoModal.bind(this)}><i className="fa fa-info" aria-hidden="true"></i></li>
+                    </ul>                            
+                </div>
+            </div>                
+        </div>
+        const trackList = this.state.showTracks ? <div className="col-xs-12 col-sm-6 text-center">         
+            <a className="btn close tracklist hidden-sm hidden-md hidden-lg" onClick={this.toggleTracks.bind(this)}><img src="close.png" height="50" alt="close button" /></a>
+            <ul className="tracks list-unstyled">
+                <li>
+                    <input className="form-control search" onChange={this.searchChanged.bind(this)} placeholder="Search" />
+                    <i className="fa fa-search" aria-hidden="true"></i>
+                </li>
+                {tracks}
+            </ul>
+        </div> : null;
         // sexy close icon - https://d30y9cdsu7xlg0.cloudfront.net/png/582631-200.png
         return (
             <div>
-                <div className={modalClass("modal-background")}>
-                    <div className={modalClass("modal")}>
+                <div className={infoModalClass("modal-background")}>
+                    <div className={infoModalClass("modal")}>
                         <div className="modal-content">
                             <div className="modal-header">                               
-                                <a className="btn close" onClick={this.toggleModal.bind(this)}><img src="close.png" height="50" alt="close button" /></a>
+                                <a className="btn close" onClick={this.toggleInfoModal.bind(this)}><img src="close.png" height="50" alt="close button" /></a>
                             </div>
                             <div className="modal-body">
                                 <h2>USBMusic <small>v5</small></h2>
@@ -224,43 +270,26 @@ class Player extends Component {
                         </div>
                     </div>
                 </div>
-                <div className="row">
-                    <div className="col-xs-12 col-sm-6">
-                        <div className="player">
-                            <Artwork current={this.state.current} handleYTReady={this.handleYTReady} />
-                            <Progress player={this.state.player} playerYT={this.state.playerYT} ended={this.next} />
-                            <div className="padding">
-                                <div className="title">
-                                    {title}{this.state.current.artist}
-                                </div>
-                                <ul className="buttons main list-unstyled list-inline">
-                                    <li onClick={this.previous.bind(this)}><i className="fa fa-fast-backward" aria-hidden="true"></i></li>
-                                    <li onClick={this.toggle.bind(this)}><i className={playOrPause()} aria-hidden="true"></i></li>
-                                    <li onClick={this.next.bind(this)}><i className="fa fa-fast-forward" aria-hidden="true"></i></li>
-                                </ul>
-                                <ul className="buttons extras list-unstyled list-inline">
-                                    <li onClick={this.shuffle.bind(this)} className={shuffleClass()}><i className="fa fa-random" aria-hidden="true"></i></li>
-                                    <li><i className="fa fa-list-ul" aria-hidden="true"></i></li>
-                                    <li onClick={this.toggleModal.bind(this)}><i className="fa fa-info" aria-hidden="true"></i></li>
-                                </ul>
-                                <br/>
-                                <br/>
+                <div className={ytModalClass("modal-background")}>
+                    <div className={ytModalClass("modal")}>
+                        <div className="modal-content">
+                            <div className="modal-header">                               
+                                <a className="btn close" onClick={this.toggleYTModal.bind(this)}><img src="close.png" height="50" alt="close button" /></a>
+                            </div>
+                            <div className="modal-body">
+                                <p>Add a song from Youtube. Paste the url below.</p>
+                                <p>Songs with the title format 'Artist - Track' work best and will map to the player correctly.</p>
                                 <div className="input-group">                             
-                                    <input className="form-control" onChange={this.youtubeUrlChanged.bind(this)} placeholder="Youtube song url" />
+                                    <input className="form-control" value={this.state.youtubeUrl} onChange={this.youtubeUrlChanged.bind(this)} placeholder="https://www.youtube.com/watch?v=qj5zT4t7S6c&list=PLIPGI4s93p5NbX7pXgGmxF5SPdEaq_2PU" />
                                     <a className="input-group-addon btn btn-default" onClick={this.addToPlaylist.bind(this)}>Add</a>
                                 </div>
                             </div>
-                        </div>                       
+                        </div>
                     </div>
-                    <div className="col-xs-12 col-sm-6">         
-                        <ul className="tracks list-unstyled">
-                            <li>
-                                <input className="form-control search" onChange={this.searchChanged.bind(this)} placeholder="Search" />
-                                <i className="fa fa-search" aria-hidden="true"></i>
-                            </li>
-                            {tracks}
-                        </ul>
-                    </div>
+                </div>
+                <div className="row">
+                    {player}                   
+                    {trackList}
                 </div>
             </div>
         );

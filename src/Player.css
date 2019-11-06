@@ -3,13 +3,14 @@ h2 {
 }
 
 .player {
-    margin: 0px -15px 5px -15px;
+    margin: 0px -15px 0px -15px;
     border-bottom: 1px solid #eee;
     background-color:#f4f4f4;
     padding-bottom: 35px;
     color:#444;
     text-align: center;
-    overflow: none;
+    overflow: hidden;
+    max-height: 100vh;
 }
 
 .padding {
@@ -97,10 +98,15 @@ h2 {
     float: none;
 }
 
+.close.tracklist {
+    margin-top: 20px;
+}
+
 .tracks {
     margin:0px auto 50px;
     max-width:440px;
     margin-top: 5%;
+    text-align: left;
 }
 
 .tracks li {
