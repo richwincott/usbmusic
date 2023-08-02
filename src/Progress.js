@@ -1,78 +1,80 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import './Progress.css';
 
-class Progress extends Component {
-    constructor(props) {
-        super(props);       
-        this.state = {
-            position: 0
-        }
-    }
-    updateTime = (ev) => {
-        let duration;
-        if (this.props.playerYT != null)
-            duration = this.props.playerYT.getDuration();
-        else
-            duration = this.props.player.duration;
-        const percent = ((ev.nativeEvent.layerX / ev.nativeEvent.target.parentElement.clientWidth) * 100);
-        const newTime = duration / 100 * percent;
-        if (this.props.playerYT != null)
-            this.props.playerYT.seekTo(newTime);
-        else
-            this.props.player.currentTime = newTime;
-    }
-    render() {     
-        let currentTime, duration, paused, ended;
-        if (this.props.playerYT != null) {
-            currentTime = this.props.playerYT.getCurrentTime();
-            duration = this.props.playerYT.getDuration();
-            paused = this.props.playerYT.paused;
-            ended = currentTime === duration ? true : false;
-        }
-        else {
-            currentTime = this.props.player.currentTime;
-            duration = this.props.player.duration;
-            paused = this.props.player.paused;
-            ended = this.props.player.ended;
-        }
+export const Progress = ({ playerYT, player, ended }) => {
+  const [position, setPosition] = useState(0)
+  const [currentTimeMins, setCurrentTimeMins] = useState(0)
+  const [currentTimeSecs, setCurrentTimeSecs] = useState(0)
+  const [durationMins, setDurationMins] = useState(0)
+  const [durationSecs, setDurationSecs] = useState(0)
 
-        setTimeout(() => {
-            if (!paused && !ended)
-                this.setState({ position: currentTime / duration * 100 });
-            else 
-                if (ended)
-                    this.props.ended();
-        }, 250);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      let currentTime, duration, paused, _ended;
+      if (playerYT != null) {
+        currentTime = playerYT.getCurrentTime();
+        duration = playerYT.getDuration();
+        paused = playerYT.paused;
+        _ended = currentTime === duration ? true : false;
+      }
+      else {
+        currentTime = player.currentTime;
+        duration = player.duration;
+        paused = player.paused;
+        _ended = player.ended;
+      }
 
-        let currentTimeMins = Math.floor(currentTime / 60)
-        if (currentTimeMins < 10)
-            currentTimeMins = "0" + currentTimeMins
-        let currentTimeSecs = Math.floor(currentTime - currentTimeMins * 60)
-        if (currentTimeSecs < 10)
-            currentTimeSecs = "0" + currentTimeSecs
-        let durationMins = Math.floor(duration / 60)
-        if (durationMins < 10)
-            durationMins = "0" + durationMins
-        let durationSecs = Math.floor(duration - durationMins * 60)
-        if (durationSecs < 10)
-            durationSecs = "0" + durationSecs
-        return (
-            <div className="progress-container">
-                <div className="progress" onClick={this.updateTime.bind(this)}>
-                    <div className="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style={{width:this.state.position+"%"}}></div>
-                </div>
-                <div className="clear"></div>
-                <div className="row time">
-                    <div className="col-xs-6 text-left">
-                        {currentTimeMins}:{currentTimeSecs}
-                    </div>
-                    <div className="col-xs-6 text-right">
-                        {durationMins}:{durationSecs}
-                    </div>
-                </div>
-            </div>
-        );
-    }
+      if (!paused && !_ended) {
+        const currentTimeMins = Math.floor(currentTime / 60)
+        setCurrentTimeMins(currentTimeMins)
+        setCurrentTimeSecs(Math.floor(currentTime - currentTimeMins * 60))
+        const durationMins = Math.floor(duration / 60);
+        setDurationMins(durationMins)
+        setDurationSecs(Math.floor(duration - durationMins * 60))
+        setPosition(currentTime / duration * 100);
+      }
+      else
+        if (_ended) {
+          setPosition(100)
+          clearInterval(interval)
+          ended();
+        }
+    }, 250);
+    return () => clearInterval(interval);
+  }, [player, playerYT])
+
+  const updateTime = (ev) => {
+    let duration;
+    if (playerYT != null)
+      duration = playerYT.getDuration();
+    else
+      duration = player.duration;
+    const percent = ((ev.nativeEvent.layerX / ev.nativeEvent.target.parentElement.clientWidth) * 100);
+    const newTime = duration / 100 * percent;
+    if (playerYT != null)
+      playerYT.seekTo(newTime);
+    else
+      player.currentTime = newTime;
+  }
+
+  const formatTime = (time) => {
+    return time < 10 ? "0" + time : time;
+  }
+
+  return (
+    <div className="progress-container">
+      <div className="progress" onClick={updateTime.bind(this)}>
+        <div className="progress-bar" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style={{ width: position + "%" }}></div>
+      </div>
+      <div className="clear"></div>
+      <div className="row time">
+        <div className="col-xs-6 text-left">
+          {formatTime(currentTimeMins)}:{formatTime(currentTimeSecs)}
+        </div>
+        <div className="col-xs-6 text-right">
+          {formatTime(durationMins)}:{formatTime(durationSecs)}
+        </div>
+      </div>
+    </div>
+  );
 }
-
-export default Progress;

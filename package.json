@@ -4,15 +4,27 @@
   "private": true,
   "homepage": "http://localhost:3000",
   "dependencies": {
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
-    "react-scripts": "1.1.1",
-    "react-youtube": "^7.6.0"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "^5.0.1",
+    "react-youtube": "^10.1.0"
   },
   "scripts": {
     "start": "set PUBLIC_URL=http://localhost:3000&& set REACT_APP_PUBLIC_URL=http://localhost:3000&& react-scripts start",
     "build": "set PUBLIC_URL=http://dev.richardwincott.co.uk/usbmusic&& set REACT_APP_PUBLIC_URL=http://dev.richardwincott.co.uk/usbmusic&& react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
