@@ -92,18 +92,6 @@ export const Player = ({ dataUrl }) => {
   }
 
   const select = (track) => {
-    setMode(track.type)
-    if (track.type === 0) {
-      if (playerYT)
-        setPlayerYT(null)
-      let player = player;
-      player.src = track.url;
-      setPlayer(player)
-      player.play();
-    }
-    else {
-      player.pause();
-    }
     if (params) {
       window.$.ajax({
         url: "https://api.spotify.com/v1/search?query=" + track.title.split("ft.")[0].split("(")[0].replace(/[|&;$%@"<>()+,]/g, "") + "+artist:" + track.artist.split("ft.")[0].replace(/[|&;$%@"<>()+,]/g, "") + "&type=track",
@@ -118,9 +106,22 @@ export const Player = ({ dataUrl }) => {
           track.showBars = false;
         });
         track.showBars = true;
+
+        setMode(track.type)
         setCurrent(track)
         setPaused(false)
         setShowTracks(window.innerWidth < 576 ? false : true)
+
+        if (track.type === 0) {
+          if (playerYT)
+            setPlayerYT(null)
+          player.src = track.url;
+          setPlayer(player)
+          player.play();
+        }
+        else {
+          player.pause();
+        }
         window.scrollTo(0, 0);
       }, (response) => {
         if (window.confirm(response.responseJSON.error.message + ". Redirect to Spotify to re-authenticate?")) {
@@ -192,7 +193,6 @@ export const Player = ({ dataUrl }) => {
           setTracks(tracks)
           setYoutubeUrl("")
           setYtModal(!ytModal)
-          select(track);
           localStorage.setItem("tracks", JSON.stringify(tracks))
         }
       });
@@ -281,8 +281,8 @@ export const Player = ({ dataUrl }) => {
               <a className="btn close" onClick={toggleInfoModal.bind(this)}><img src="close.png" height="50" alt="close button" /></a>
             </div>
             <div className="modal-body">
-              <h2>USBMusic <small>v5</small></h2>
-              <p>Personal web app to play music remotely from usb device.</p>
+              <h2>Music Player <small>v5</small></h2>
+              <p>Personal web app to play music from a remote device.</p>
               <p>Written with ReactJS.</p>
               <p>This app uses the Spotify API to download album artwork.</p>
             </div>
