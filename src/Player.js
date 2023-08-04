@@ -3,18 +3,20 @@ import { Progress } from './Progress';
 import { Artwork } from './Artwork';
 import './Player.css';
 
+const defaultCurrent = {
+  id: null,
+  url: "",
+  artist: "No track selected...",
+  name: "No track selected...",
+  artwork_url: "note.png"
+}
+
 export const Player = ({ dataUrl }) => {
   const [mode, setMode] = useState(0) // 0 = audio, 1 = youtube
   const [player, setPlayer] = useState(new Audio())
   const [playerYT, setPlayerYT] = useState(null)
   const [tracks, setTracks] = useState(localStorage.getItem("tracks") ? JSON.parse(localStorage.getItem("tracks")) : [])
-  const [current, setCurrent] = useState({
-    id: null,
-    url: "",
-    artist: "No track selected...",
-    name: "No track selected...",
-    artwork_url: "note.png"
-  })
+  const [current, setCurrent] = useState(defaultCurrent)
   const [paused, setPaused] = useState(true)
   const [position, setPosition] = useState(0)
   const [shuffle, setShuffle] = useState(false)
@@ -126,14 +128,16 @@ export const Player = ({ dataUrl }) => {
     }
   }
 
-  const next = () => {
+  const next = (origin) => {
+    console.log(origin)
     let nextId = current.id + 1;
-    if (nextId === tracks.length + 1)
-      nextId = tracks.length
     if (shuffle)
       nextId = Math.floor(Math.random() * tracks.length - 1);
     if (tracks[nextId])
       select(tracks[nextId]);
+    else {
+      setCurrent(defaultCurrent)
+    }
   }
 
   const previous = () => {
@@ -223,21 +227,21 @@ export const Player = ({ dataUrl }) => {
   const _player = showTracks && window.innerWidth < 576 ? null : <div className="col-xs-12 col-sm-6">
     <div className="player">
       <Artwork current={current} handleYTReady={handleYTReady} />
-      <Progress player={player} playerYT={playerYT} ended={next} />
+      <Progress player={player} playerYT={playerYT} ended={() => next("ended")} />
       <div className="padding">
         <div className="title">
           {current.title ? <div><b>{current.title}</b></div> : <div className="hack"></div>}{current.artist}
         </div>
         <ul className="buttons main list-unstyled list-inline">
-          <li onClick={previous.bind(this)}><i className="fa fa-fast-backward" aria-hidden="true"></i></li>
-          <li onClick={toggle.bind(this)}><i className={playOrPause()} aria-hidden="true"></i></li>
-          <li onClick={next.bind(this)}><i className="fa fa-fast-forward" aria-hidden="true"></i></li>
+          <li onClick={previous}><i className="fa fa-fast-backward" aria-hidden="true"></i></li>
+          <li onClick={toggle}><i className={playOrPause()} aria-hidden="true"></i></li>
+          <li onClick={next}><i className="fa fa-fast-forward" aria-hidden="true"></i></li>
         </ul>
         <ul className="buttons extras list-unstyled list-inline">
-          <li onClick={shuffleSongs.bind(this)} className={shuffleClass()}><i className="fa fa-random" aria-hidden="true"></i></li>
-          <li onClick={toggleTracks.bind(this)} className="hidden-sm hidden-md hidden-lg"><i className="fa fa-list-ul" aria-hidden="true"></i></li>
-          <li onClick={toggleYTModal.bind(this)}><i className="fa fa-plus" aria-hidden="true"></i></li>
-          <li onClick={toggleInfoModal.bind(this)}><i className="fa fa-info" aria-hidden="true"></i></li>
+          <li onClick={shuffleSongs} className={shuffleClass()}><i className="fa fa-random" aria-hidden="true"></i></li>
+          <li onClick={toggleTracks} className="hidden-sm hidden-md hidden-lg"><i className="fa fa-list-ul" aria-hidden="true"></i></li>
+          <li onClick={toggleYTModal}><i className="fa fa-plus" aria-hidden="true"></i></li>
+          <li onClick={toggleInfoModal}><i className="fa fa-info" aria-hidden="true"></i></li>
         </ul>
       </div>
     </div>
@@ -260,10 +264,10 @@ export const Player = ({ dataUrl }) => {
     });
 
     return showTracks ? <div className="col-xs-12 col-sm-6 text-center">
-      <a className="btn close tracklist hidden-sm hidden-md hidden-lg" onClick={toggleTracks.bind(this)}><img src="close.png" height="50" alt="close button" /></a>
+      <a className="btn close tracklist hidden-sm hidden-md hidden-lg" onClick={toggleTracks}><img src="close.png" height="50" alt="close button" /></a>
       <ul className="tracks list-unstyled">
         <li>
-          <input className="form-control search" onChange={searchChanged.bind(this)} placeholder="Search" />
+          <input className="form-control search" onChange={searchChanged} placeholder="Search" />
           <i className="fa fa-search" aria-hidden="true"></i>
         </li>
         {_tracks}
@@ -277,7 +281,7 @@ export const Player = ({ dataUrl }) => {
         <div className={infoModalClass("modal")}>
           <div className="modal-content">
             <div className="modal-header">
-              <a className="btn close" onClick={toggleInfoModal.bind(this)}><img src="close.png" height="50" alt="close button" /></a>
+              <a className="btn close" onClick={toggleInfoModal}><img src="close.png" height="50" alt="close button" /></a>
             </div>
             <div className="modal-body">
               <h2>Music Player <small>v5</small></h2>
@@ -292,14 +296,14 @@ export const Player = ({ dataUrl }) => {
         <div className={ytModalClass("modal")}>
           <div className="modal-content">
             <div className="modal-header">
-              <a className="btn close" onClick={toggleYTModal.bind(this)}><img src="close.png" height="50" alt="close button" /></a>
+              <a className="btn close" onClick={toggleYTModal}><img src="close.png" height="50" alt="close button" /></a>
             </div>
             <div className="modal-body">
               <p>Add a song from Youtube. Paste the url below.</p>
               <p>Songs with the title format 'Artist - Track' work best and will map to the player correctly.</p>
               <div className="input-group">
-                <input className="form-control" value={youtubeUrl} onChange={youtubeUrlChanged.bind(this)} placeholder="https://www.youtube.com/watch?v=qj5zT4t7S6c&list=PLIPGI4s93p5NbX7pXgGmxF5SPdEaq_2PU" />
-                <a className="input-group-addon btn btn-default" onClick={addToPlaylist.bind(this)}>Add</a>
+                <input className="form-control" value={youtubeUrl} onChange={youtubeUrlChanged} placeholder="https://www.youtube.com/watch?v=qj5zT4t7S6c&list=PLIPGI4s93p5NbX7pXgGmxF5SPdEaq_2PU" />
+                <a className="input-group-addon btn btn-default" onClick={addToPlaylist}>Add</a>
               </div>
             </div>
           </div>
