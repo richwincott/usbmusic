@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './Progress.css';
 
-export const Progress = ({ playerYT, player, ended }) => {
+export const Progress = ({ current, playerYT, player, ended }) => {
   const [position, setPosition] = useState(0)
   const [currentTimeMins, setCurrentTimeMins] = useState(0)
   const [currentTimeSecs, setCurrentTimeSecs] = useState(0)
@@ -9,39 +9,46 @@ export const Progress = ({ playerYT, player, ended }) => {
   const [durationSecs, setDurationSecs] = useState(0)
 
   useEffect(() => {
-    console.log(player.src, playerYT ? playerYT.getVideoUrl() : null)
-    const interval = setInterval(() => {
-      let currentTime, duration, paused, _ended;
-      if (playerYT != null) {
-        currentTime = playerYT.getCurrentTime();
-        duration = playerYT.getDuration();
-        paused = playerYT.paused;
-        _ended = currentTime === duration ? true : false;
-      }
-      else {
-        currentTime = player.currentTime;
-        duration = player.duration;
-        paused = player.paused;
-        _ended = player.ended;
-      }
+    if (current.id !== null) {
+      setCurrentTimeMins(0)
+      setCurrentTimeSecs(0)
 
-      if (!paused && !_ended) {
-        const currentTimeMins = Math.floor(currentTime / 60)
-        setCurrentTimeMins(currentTimeMins)
-        setCurrentTimeSecs(Math.floor(currentTime - currentTimeMins * 60))
-        const durationMins = Math.floor(duration / 60);
-        setDurationMins(durationMins)
-        setDurationSecs(Math.floor(duration - durationMins * 60))
-        setPosition(currentTime / duration * 100);
-      }
-      else
-        if (_ended) {
-          setPosition(100)
-          clearInterval(interval)
-          ended();
+      const interval = setInterval(() => {
+        let currentTime, duration, paused, _ended;
+
+        if (playerYT != null) {
+          currentTime = playerYT.getCurrentTime();
+          duration = playerYT.getDuration();
+          paused = playerYT.getPlayerState() == 2;
+          _ended = currentTime === duration && playerYT.getPlayerState() != 3 ? true : false;
         }
-    }, 250);
-    return () => clearInterval(interval);
+        else {
+          currentTime = player.currentTime;
+          duration = player.duration;
+          paused = player.paused;
+          _ended = player.ended;
+        }
+
+        if (!paused && !_ended) {
+          const currentTimeMins = Math.floor(currentTime / 60)
+          setCurrentTimeMins(currentTimeMins)
+          setCurrentTimeSecs(Math.floor(currentTime - currentTimeMins * 60))
+          const durationMins = Math.floor(duration / 60);
+          setDurationMins(durationMins)
+          setDurationSecs(Math.floor(duration - durationMins * 60))
+          setPosition(currentTime / duration * 100);
+        }
+        else
+          if (_ended) {
+            setPosition(100)
+            setCurrentTimeMins(durationMins)
+            setCurrentTimeSecs(durationSecs)
+            clearInterval(interval)
+            ended();
+          }
+      }, 250);
+      return () => clearInterval(interval);
+    }
   }, [player, playerYT])
 
   const updateTime = (ev) => {

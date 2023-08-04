@@ -128,8 +128,7 @@ export const Player = ({ dataUrl }) => {
     }
   }
 
-  const next = (origin) => {
-    console.log(origin)
+  const next = () => {
     let nextId = current.id + 1;
     if (shuffle)
       nextId = Math.floor(Math.random() * tracks.length - 1);
@@ -203,7 +202,6 @@ export const Player = ({ dataUrl }) => {
   const handleYTReady = (event) => {
     // access to player in all event handlers via event.target
     // e.g. event.target.pauseVideo();
-    console.log("ready")
     setMode(1)
     setPlayerYT(event.target)
   }
@@ -227,7 +225,7 @@ export const Player = ({ dataUrl }) => {
   const _player = showTracks && window.innerWidth < 576 ? null : <div className="col-xs-12 col-sm-6">
     <div className="player">
       <Artwork current={current} handleYTReady={handleYTReady} />
-      <Progress player={player} playerYT={playerYT} ended={() => next("ended")} />
+      <Progress current={current} player={player} playerYT={playerYT} ended={next} />
       <div className="padding">
         <div className="title">
           {current.title ? <div><b>{current.title}</b></div> : <div className="hack"></div>}{current.artist}
