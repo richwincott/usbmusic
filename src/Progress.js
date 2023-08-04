@@ -9,6 +9,7 @@ export const Progress = ({ playerYT, player, ended }) => {
   const [durationSecs, setDurationSecs] = useState(0)
 
   useEffect(() => {
+    console.log(player.src, playerYT ? playerYT.getVideoUrl() : null)
     const interval = setInterval(() => {
       let currentTime, duration, paused, _ended;
       if (playerYT != null) {

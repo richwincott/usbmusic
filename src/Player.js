@@ -45,8 +45,7 @@ export const Player = ({ dataUrl }) => {
             title: name.split(" - ")[1] ? name.split(" - ")[1] : "",
             artist: name.split(" - ")[0],
             // https://png.icons8.com/color/300/music-record
-            artwork_url: "note.png",
-            showBars: false
+            artwork_url: "note.png"
           });
           id++;
         }
@@ -81,7 +80,6 @@ export const Player = ({ dataUrl }) => {
         else
           player.pause();
       }
-      current.showBars = !current.showBars;
       setPaused(!paused)
       setCurrent(current)
     }
@@ -93,8 +91,9 @@ export const Player = ({ dataUrl }) => {
 
   const select = (track) => {
     if (params) {
+      const url = "https://api.spotify.com/v1/search?query=" + track.title.split("ft.")[0].split("(")[0].replace(/[|&;$%@"<>()+,]/g, "") + "+artist:" + track.artist.split("ft.")[0].replace(/[|&;$%@"<>()+,]/g, "") + "&type=track";
       window.$.ajax({
-        url: "https://api.spotify.com/v1/search?query=" + track.title.split("ft.")[0].split("(")[0].replace(/[|&;$%@"<>()+,]/g, "") + "+artist:" + track.artist.split("ft.")[0].replace(/[|&;$%@"<>()+,]/g, "") + "&type=track",
+        url,
         headers: {
           "Authorization": "Bearer " + params["access_token"]
         },
@@ -102,10 +101,6 @@ export const Player = ({ dataUrl }) => {
         if (response.tracks.items.length > 0) {
           track.artwork_url = response.tracks.items[0].album.images[0].url;
         }
-        tracks.forEach(function (track) {
-          track.showBars = false;
-        });
-        track.showBars = true;
 
         setMode(track.type)
         setCurrent(track)
@@ -186,14 +181,16 @@ export const Player = ({ dataUrl }) => {
             name: response_json.title,
             title: response_json.title.split(" - ")[1].split("(")[0].split("[")[0],
             artist: response_json.title.split(" - ")[0],
-            artwork_url: "note.png",
-            showBars: false
+            artwork_url: "note.png"
           }
           tracks.push(track);
           setTracks(tracks)
           setYoutubeUrl("")
           setYtModal(!ytModal)
           localStorage.setItem("tracks", JSON.stringify(tracks))
+        }
+        else {
+          alert("Not a music video. Please try another url.")
         }
       });
     }
@@ -202,6 +199,7 @@ export const Player = ({ dataUrl }) => {
   const handleYTReady = (event) => {
     // access to player in all event handlers via event.target
     // e.g. event.target.pauseVideo();
+    console.log("ready")
     setMode(1)
     setPlayerYT(event.target)
   }
@@ -248,11 +246,12 @@ export const Player = ({ dataUrl }) => {
   const trackList = () => {
     const _tracks = tracks.map((track) => {
       if (track.title.indexOf(search) > -1 || track.artist.indexOf(search) > -1 || search == null) {
-        const barsClass = track.showBars ? "pull-right bars show" : "pull-right bars";
+        const barsClass = track.id == current.id && !paused ? "pull-right bars show" : "pull-right bars";
         return (
           <li onClick={select.bind(this, track)} key={track.id}>
             <b>{track.title}</b>
             <br />{track.artist}
+            <br />{JSON.stringify(track)}
             <img className={barsClass} src="bars.gif" alt="music bars animation" />
           </li>
         )
