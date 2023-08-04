@@ -248,7 +248,7 @@ export const Player = ({ dataUrl }) => {
 
   const trackList = () => {
     const _tracks = tracks.map((track) => {
-      if (track.title.indexOf(search) > -1 || track.artist.indexOf(search) > -1 || search == null) {
+      if (track.title.toLowerCase().indexOf(search) > -1 || track.artist.toLowerCase().indexOf(search) > -1 || search == null) {
         const barsClass = track.id == current.id && !paused ? "pull-right bars show" : "pull-right bars";
         return (
           <li onClick={select.bind(this, track)} key={track.id}>
