@@ -56,6 +56,36 @@ export const Player = ({ dataUrl }) => {
     });
   }, []) */
 
+  useEffect(() => {
+    if (youtubeUrl.indexOf("youtu") > -1) {
+      window.$.ajax({
+        //url: process.env.REACT_APP_PUBLIC_URL.split(':3000')[0] + "/youtubemetadata?url=" + youtubeUrl,
+        url: "https://dev.richardwincott.co.uk/youtubemetadata?url=" + youtubeUrl,
+      }).then((response, status) => {
+        const response_json = JSON.parse(response);
+        if (response_json.title.indexOf(" - ") > -1) {
+          let track = {
+            id: tracks.length,
+            type: 1,
+            url: "ytId:" + response_json.thumbnail_url.split("/")[4],
+            name: response_json.title,
+            title: response_json.title.split(" - ")[1].split("(")[0].split("[")[0],
+            artist: response_json.title.split(" - ")[0],
+            artwork_url: "note.png"
+          }
+          tracks.push(track);
+          setTracks(tracks)
+          setYoutubeUrl("")
+          setYtModal(!ytModal)
+          localStorage.setItem("tracks", JSON.stringify(tracks))
+        }
+        else {
+          alert("Not a music video. Please try another url.")
+        }
+      })
+    }
+  }, [youtubeUrl])
+
   const bad = (link) => {
     ["xml", "config", "Old Music", "Bruno Mars"].forEach((word) => {
       if (link.innerHTML.indexOf(word) > -1)
@@ -165,38 +195,9 @@ export const Player = ({ dataUrl }) => {
     setSearch(ev.currentTarget.value)
   }
 
-  const youtubeUrlChanged = (ev) => {
-    setYoutubeUrl(ev.currentTarget.value)
-  }
-
-  const addToPlaylist = () => {
-    if (youtubeUrl.indexOf("youtu") > -1) {
-      window.$.ajax({
-        //url: process.env.REACT_APP_PUBLIC_URL.split(':3000')[0] + "/youtubemetadata?url=" + youtubeUrl,
-        url: "https://dev.richardwincott.co.uk/youtubemetadata?url=" + youtubeUrl,
-      }).then((response, status) => {
-        var response_json = JSON.parse(response);
-        if (response_json.title.indexOf(" - ") > -1) {
-          let track = {
-            id: tracks.length,
-            type: 1,
-            url: "ytId:" + response_json.thumbnail_url.split("/")[4],
-            name: response_json.title,
-            title: response_json.title.split(" - ")[1].split("(")[0].split("[")[0],
-            artist: response_json.title.split(" - ")[0],
-            artwork_url: "note.png"
-          }
-          tracks.push(track);
-          setTracks(tracks)
-          setYoutubeUrl("")
-          setYtModal(!ytModal)
-          localStorage.setItem("tracks", JSON.stringify(tracks))
-        }
-        else {
-          alert("Not a music video. Please try another url.")
-        }
-      });
-    }
+  const addToPlaylist = async () => {
+    const text = await navigator.clipboard.readText();
+    setYoutubeUrl(text);
   }
 
   const handleYTReady = (event) => {
@@ -253,7 +254,6 @@ export const Player = ({ dataUrl }) => {
           <li onClick={select.bind(this, track)} key={track.id}>
             <b>{track.title}</b>
             <br />{track.artist}
-            <br />{JSON.stringify(track)}
             <img className={barsClass} src="bars.gif" alt="music bars animation" />
           </li>
         )
@@ -300,8 +300,8 @@ export const Player = ({ dataUrl }) => {
               <p>Add a song from Youtube. Paste the url below.</p>
               <p>Songs with the title format 'Artist - Track' work best and will map to the player correctly.</p>
               <div className="input-group">
-                <input className="form-control" value={youtubeUrl} onChange={youtubeUrlChanged} placeholder="https://www.youtube.com/watch?v=qj5zT4t7S6c&list=PLIPGI4s93p5NbX7pXgGmxF5SPdEaq_2PU" />
-                <a className="input-group-addon btn btn-default" onClick={addToPlaylist}>Add</a>
+                <input className="form-control" value={youtubeUrl} disabled placeholder="Copy a url to your clipboard and then click paste" />
+                <a className="input-group-addon btn btn-default" onClick={addToPlaylist}>Paste</a>
               </div>
             </div>
           </div>
