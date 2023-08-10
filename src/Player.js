@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Progress } from './Progress';
 import { Artwork } from './Artwork';
 import './Player.css';
+import { http } from './Http';
 
 const defaultCurrent = {
   id: null,
@@ -24,6 +25,7 @@ export const Player = ({ dataUrl }) => {
   const [ytModal, setYtModal] = useState(false)
   const [search, setSearch] = useState(null)
   const [youtubeUrl, setYoutubeUrl] = useState("")
+  const [youtubeResults, setYoutubeResults] = useState([])
   const [showTracks, setShowTracks] = useState(window.innerWidth < 576 ? false : true)
   const [params, setParams] = useState(sessionStorage.getItem("params") != null ?
     JSON.parse(sessionStorage.getItem("params")) : null)
@@ -57,33 +59,10 @@ export const Player = ({ dataUrl }) => {
   }, []) */
 
   useEffect(() => {
-    if (youtubeUrl.indexOf("youtu") > -1) {
-      window.$.ajax({
-        //url: process.env.REACT_APP_PUBLIC_URL.split(':3000')[0] + "/youtubemetadata?url=" + youtubeUrl,
-        url: "https://dev.richardwincott.co.uk/youtubemetadata?url=" + youtubeUrl,
-      }).then((response, status) => {
-        const response_json = JSON.parse(response);
-        if (response_json.title.indexOf(" - ") > -1) {
-          let track = {
-            id: tracks.length,
-            type: 1,
-            url: "ytId:" + response_json.thumbnail_url.split("/")[4],
-            name: response_json.title,
-            title: response_json.title.split(" - ")[1].split("(")[0].split("[")[0],
-            artist: response_json.title.split(" - ")[0],
-            artwork_url: "note.png"
-          }
-          tracks.push(track);
-          setTracks(tracks)
-          setYoutubeUrl("")
-          setYtModal(!ytModal)
-          localStorage.setItem("tracks", JSON.stringify(tracks))
-        }
-        else {
-          alert("Not a music video. Please try another url.")
-        }
+    if (!!youtubeUrl)
+      http.get('youtubeSearch?query=' + youtubeUrl).then((data) => {
+        setYoutubeResults(data)
       })
-    }
   }, [youtubeUrl])
 
   const bad = (link) => {
@@ -195,9 +174,38 @@ export const Player = ({ dataUrl }) => {
     setSearch(ev.currentTarget.value)
   }
 
-  const addToPlaylist = async () => {
-    const text = await navigator.clipboard.readText();
-    setYoutubeUrl(text);
+  const youtubeUrlChanged = (ev) => {
+    setYoutubeUrl(ev.currentTarget.value)
+  }
+
+  const addToPlaylist = async (videoUrl) => {
+    if (videoUrl.indexOf("youtu") > -1) {
+      window.$.ajax({
+        //url: process.env.REACT_APP_PUBLIC_URL.split(':3000')[0] + "/youtubemetadata?url=" + youtubeUrl,
+        url: "https://dev.richardwincott.co.uk/youtubemetadata?url=" + videoUrl,
+      }).then((response, status) => {
+        const response_json = JSON.parse(response);
+        if (response_json.title.indexOf(" - ") > -1) {
+          let track = {
+            id: tracks.length,
+            type: 1,
+            url: "ytId:" + response_json.thumbnail_url.split("/")[4],
+            name: response_json.title,
+            title: response_json.title.split(" - ")[1].split("(")[0].split("[")[0],
+            artist: response_json.title.split(" - ")[0],
+            artwork_url: "note.png"
+          }
+          tracks.push(track);
+          setTracks(tracks)
+          setYoutubeUrl("")
+          setYtModal(!ytModal)
+          localStorage.setItem("tracks", JSON.stringify(tracks))
+        }
+        else {
+          alert("Not a music video. Please try another url.")
+        }
+      })
+    }
   }
 
   const handleYTReady = (event) => {
@@ -297,12 +305,16 @@ export const Player = ({ dataUrl }) => {
               <a className="btn close" onClick={toggleYTModal}><img src="close.png" height="50" alt="close button" /></a>
             </div>
             <div className="modal-body">
-              <p>Add a song from Youtube. Paste the url below.</p>
+              <p>Add a song from Youtube.</p>
               <p>Songs with the title format 'Artist - Track' work best and will map to the player correctly.</p>
-              <div className="input-group">
-                <input className="form-control" value={youtubeUrl} disabled placeholder="Copy a url to your clipboard and then click paste" />
-                <a className="input-group-addon btn btn-default" onClick={addToPlaylist}>Paste</a>
-              </div>
+              <input className="form-control" value={youtubeUrl} onChange={youtubeUrlChanged} placeholder="Search here..." />
+              <ul className='list-unstyled' style={{ overflowY: 'scroll', height: '380px' }}>
+                {youtubeResults.map((result, index) => (<li key={index} style={{ display: 'flex', alignItems: 'center' }}>
+                  <span style={{ flex: '1' }}>${result.title}</span>
+                  <a className="btn btn-default" onClick={() => addToPlaylist(result.url)}>Add</a>
+                  <hr />
+                </li>))}
+              </ul>
             </div>
           </div>
         </div>
@@ -311,6 +323,6 @@ export const Player = ({ dataUrl }) => {
         {_player}
         {trackList()}
       </div>
-    </div>
+    </div >
   );
 }
