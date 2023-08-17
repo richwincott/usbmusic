@@ -5,6 +5,7 @@ const cors = require('cors')
 const yt = require('youtube-search-without-api-key');
 const axios = require('axios');
 const https = require('https')
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 app.use(cors({ origin: 'http://localhost:3000' }))
 app.use(express.json())
@@ -20,7 +21,9 @@ app.get('/youtubeMeta', async (req, res) => {
   const url = req.query.url;
   if (!url) return res.json({ message: 'Please provide the querystring value: url' })
   const agent = new https.Agent({
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    requestCert: false,
+    agent: false,
   });
   try {
     const data = await axios.get('https://dev.richardwincott.co.uk/youtubemetadata?url=' + url, { httpsAgent: agent })

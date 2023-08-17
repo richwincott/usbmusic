@@ -293,7 +293,7 @@ export const Player = ({ dataUrl }) => {
               <h2>Music Player <small>v5</small></h2>
               <p>Personal web app to play music from a remote device.</p>
               <p>Written with ReactJS.</p>
-              <p>This app uses the Spotify API to download album artwork.</p>
+              <p>This app uses Youtube for the player and Spotify to download album artwork.</p>
             </div>
           </div>
         </div>
@@ -304,15 +304,15 @@ export const Player = ({ dataUrl }) => {
             <div className="modal-header">
               <a className="btn close" onClick={toggleYTModal}><img src="close.png" height="50" alt="close button" /></a>
             </div>
-            <div className="modal-body">
+            <div className="modal-body" style={{ paddingBottom: '15px' }}>
               <p>Add a song from Youtube.</p>
               <p>Songs with the title format 'Artist - Track' work best and will map to the player correctly.</p>
               <input className="form-control" value={youtubeUrl} onChange={youtubeUrlChanged} placeholder="Search here..." />
-              <ul className='list-unstyled' style={{ overflowY: 'scroll', height: '380px' }}>
-                {youtubeResults.map((result, index) => (<li key={index} style={{ display: 'flex', alignItems: 'center' }}>
-                  <span style={{ flex: '1' }}>${result.title}</span>
-                  <a className="btn btn-default" onClick={() => addToPlaylist(result.url)}>Add</a>
-                  <hr />
+              <ul className='list-unstyled' style={{ overflowY: 'scroll', height: '380px', marginTop: '15px' }}>
+                {youtubeResults.map((result, index) => (<li key={index} style={{ display: 'flex', alignItems: 'center', padding: '5px 0' }}>
+                  <img src={result.snippet.thumbnails.default.url} height="55px" style={{ borderRadius: '5px', marginRight: '10px' }} />
+                  <span style={{ flex: '1' }}>{result.title}<br />Duration: {result.snippet.duration} | Views: {result.snippet.views}</span>
+                  <a className="btn btn-default" style={{ marginRight: '5px' }} onClick={() => addToPlaylist(result.url)}>Add</a>
                 </li>))}
               </ul>
             </div>
